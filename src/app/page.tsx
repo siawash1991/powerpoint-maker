@@ -1,72 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import PresentationForm from '@/components/PresentationForm';
-import SlidePreview from '@/components/SlidePreview';
-import type { PresentationOutline, GenerateResponse } from '@/types/presentation';
+import { SlideGenerator } from '@/components/SlideGenerator';
+import { SimpleSlidePreview } from '@/components/SimpleSlidePreview';
+import { generateSlides, type PresentationData } from '@/lib/slideGenerator';
+import { exportToPowerPoint } from '@/lib/pptxExport';
 
 export default function Home() {
-  const [outline, setOutline] = useState<PresentationOutline | null>(null);
+  const [presentation, setPresentation] = useState<PresentationData | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGeneratePresentation = async (data: {
-    topic: string;
-    slideCount: number;
-    audience: string;
-    template?: string;
-    includeShapes?: boolean;
-    includeCharts?: boolean;
-  }) => {
+  const handleGenerate = async (text: string) => {
     setError(null);
+    setIsGenerating(true);
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate presentation');
-      }
-
-      const result: GenerateResponse = await response.json();
-      setOutline(result.outline);
+      const result = await generateSlides(text);
+      setPresentation(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'خطا در ساخت پرزنتیشن');
-      console.error('Error generating presentation:', err);
+      setError(err instanceof Error ? err.message : 'خطا در تولید اسلایدها');
+      console.error('Error generating slides:', err);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const handleExport = async () => {
-    if (!outline) return;
+    if (!presentation) return;
 
     try {
-      const response = await fetch('/api/export', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ outline }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to export presentation');
-      }
-
-      // Download the file
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${outline.title}.pptx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      await exportToPowerPoint(presentation);
     } catch (err) {
       setError('خطا در دانلود فایل');
       console.error('Error exporting presentation:', err);
@@ -74,7 +38,7 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setOutline(null);
+    setPresentation(null);
     setError(null);
   };
 
@@ -84,11 +48,14 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            ساخت پرزنتیشن با هوش مصنوعی
+            🎯 پاوربینت هوشمند
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
             پرزنتیشن حرفه‌ای خود را در چند ثانیه بسازید
           </p>
+          <div className="mt-4 inline-block px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg">
+            ✅ بدون نیاز به API Key - کاملاً رایگان
+          </div>
         </div>
 
         {/* Error Message */}
@@ -99,28 +66,51 @@ export default function Home() {
         )}
 
         {/* Content */}
-        {!outline ? (
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-            <PresentationForm onSubmit={handleGeneratePresentation} />
+        {!presentation ? (
+          <div className="max-w-3xl mx-auto">
+            <SlideGenerator onGenerate={handleGenerate} isGenerating={isGenerating} />
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-6 flex justify-between items-center">
-              <button
-                onClick={handleReset}
-                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                ← ساخت پرزنتیشن جدید
-              </button>
+          <div className="max-w-6xl mx-auto">
+            <SimpleSlidePreview
+              presentation={presentation}
+              onExport={handleExport}
+              onReset={handleReset}
+            />
+          </div>
+        )}
+
+        {/* Features */}
+        {!presentation && (
+          <div className="max-w-4xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+              <div className="text-4xl mb-3">⚡</div>
+              <h3 className="font-bold text-lg mb-2">سریع و آسان</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                فقط متن خود را بنویسید و در چند ثانیه پرزنتیشن آماده است
+              </p>
             </div>
-            <SlidePreview outline={outline} onExport={handleExport} />
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+              <div className="text-4xl mb-3">🎨</div>
+              <h3 className="font-bold text-lg mb-2">طراحی حرفه‌ای</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                قالب‌های زیبا و مدرن با پشتیبانی کامل از زبان فارسی
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+              <div className="text-4xl mb-3">🔒</div>
+              <h3 className="font-bold text-lg mb-2">کاملاً رایگان</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                بدون نیاز به API Key یا ثبت‌نام - همه چیز در مرورگر شما
+              </p>
+            </div>
           </div>
         )}
 
         {/* Footer */}
         <div className="text-center mt-12 text-gray-600 dark:text-gray-400">
           <p className="text-sm">
-            ساخته شده با Claude AI
+            ساخته شده با ❤️ برای کاربران فارسی‌زبان
           </p>
         </div>
       </main>
