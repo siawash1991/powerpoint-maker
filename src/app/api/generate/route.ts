@@ -23,9 +23,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check API key
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your_api_key_here') {
       return NextResponse.json(
-        { error: 'API key not configured' },
+        {
+          error: 'API Key تنظیم نشده است. لطفاً فایل .env.local را ویرایش کنید و API Key خود را از https://console.anthropic.com/ دریافت کنید.'
+        },
         { status: 500 }
       );
     }
