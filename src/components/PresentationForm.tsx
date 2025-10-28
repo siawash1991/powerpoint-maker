@@ -1,13 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import type { AudienceType } from '@/types/presentation';
+import type { AudienceType, TemplateType } from '@/types/presentation';
+import { getAllTemplates } from '@/lib/templates';
 
 interface PresentationFormProps {
   onSubmit: (data: {
     topic: string;
     slideCount: number;
     audience: AudienceType;
+    template?: TemplateType;
+    includeShapes?: boolean;
+    includeCharts?: boolean;
   }) => Promise<void>;
 }
 
@@ -15,7 +19,12 @@ export default function PresentationForm({ onSubmit }: PresentationFormProps) {
   const [topic, setTopic] = useState('');
   const [slideCount, setSlideCount] = useState(5);
   const [audience, setAudience] = useState<AudienceType>('general');
+  const [template, setTemplate] = useState<TemplateType>('modern-gradient');
+  const [includeShapes, setIncludeShapes] = useState(true);
+  const [includeCharts, setIncludeCharts] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const templates = getAllTemplates();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +32,14 @@ export default function PresentationForm({ onSubmit }: PresentationFormProps) {
 
     setIsLoading(true);
     try {
-      await onSubmit({ topic, slideCount, audience });
+      await onSubmit({
+        topic,
+        slideCount,
+        audience,
+        template,
+        includeShapes,
+        includeCharts,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +103,68 @@ export default function PresentationForm({ onSubmit }: PresentationFormProps) {
           <option value="business">کسب‌وکار</option>
           <option value="academic">دانشگاهی</option>
         </select>
+      </div>
+
+      {/* Template Selection */}
+      <div className="space-y-2">
+        <label htmlFor="template" className="block text-sm font-medium text-foreground">
+          قالب طراحی
+        </label>
+        <select
+          id="template"
+          value={template}
+          onChange={(e) => setTemplate(e.target.value as TemplateType)}
+          className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-right cursor-pointer"
+        >
+          {templates.map((t) => (
+            <option key={t.name} value={t.name}>
+              {t.displayName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Advanced Options */}
+      <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="text-sm font-semibold text-foreground mb-2">
+          گزینه‌های پیشرفته
+        </h3>
+
+        {/* Include Shapes */}
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={includeShapes}
+            onChange={(e) => setIncludeShapes(e.target.checked)}
+            className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          />
+          <div className="flex-1">
+            <span className="block text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
+              اضافه کردن اشکال هندسی
+            </span>
+            <span className="block text-xs text-gray-500 dark:text-gray-400">
+              دایره، مربع، arrow، flowchart به صورت خودکار
+            </span>
+          </div>
+        </label>
+
+        {/* Include Charts */}
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={includeCharts}
+            onChange={(e) => setIncludeCharts(e.target.checked)}
+            className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          />
+          <div className="flex-1">
+            <span className="block text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
+              اضافه کردن نمودارها
+            </span>
+            <span className="block text-xs text-gray-500 dark:text-gray-400">
+              نمودارهای Bar، Pie، Line برای داده‌های آماری
+            </span>
+          </div>
+        </label>
       </div>
 
       {/* Submit Button */}

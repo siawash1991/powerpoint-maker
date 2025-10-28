@@ -13,6 +13,9 @@ export default function Home() {
     topic: string;
     slideCount: number;
     audience: string;
+    template?: string;
+    includeShapes?: boolean;
+    includeCharts?: boolean;
   }) => {
     setError(null);
 

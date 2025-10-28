@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const buffer = await generatePowerPoint(body.outline);
 
     // Return file
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',

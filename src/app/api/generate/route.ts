@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
       topic: body.topic,
       slideCount: body.slideCount,
       audience: body.audience,
+      template: body.template,
+      includeShapes: body.includeShapes,
+      includeCharts: body.includeCharts,
     });
 
     const response: GenerateResponse = {
