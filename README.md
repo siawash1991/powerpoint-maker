@@ -1,178 +1,266 @@
-# 🎯 ساخت پرزنتیشن فارسی با هوش مصنوعی
+# 🎯 سیستم تولید ارائه PowerPoint فارسی با هوش مصنوعی
 
-پلتفرم ساخت پرزنتیشن حرفه‌ای با استفاده از هوش مصنوعی Claude و export به PowerPoint
+یک سیستم کامل Backend با Node.js/Express که با Claude AI ارائه‌های PowerPoint فارسی تولید می‌کند.
 
 ## ✨ ویژگی‌ها
 
-- 🤖 **تولید خودکار محتوا**: استفاده از Claude AI برای تولید outline پرزنتیشن
-- 🎨 **طراحی حرفه‌ای**: رابط کاربری زیبا و مدرن با Tailwind CSS
-- 📝 **پشتیبانی کامل از فارسی**: RTL support و فونت Vazirmatn
-- 📊 **Export به PowerPoint**: دانلود مستقیم فایل .pptx
-- 🎭 **انواع layout**: Title, Content, Two-Column, Conclusion
-- ⚙️ **قابل تنظیم**: انتخاب تعداد اسلاید (5-20) و نوع مخاطب
+- 🤖 **تولید خودکار با Claude AI** - استفاده از Claude Sonnet 4 برای تولید محتوا
+- 🎨 **8 تم حرفه‌ای** - از حرفه‌ای آبی تا خلاقانه مرجانی
+- 📊 **HTML به PowerPoint** - تبدیل خودکار HTML به فایل .pptx
+- 🇮🇷 **پشتیبانی کامل از فارسی** - RTL و فونت مناسب
+- ⚡ **RESTful API** - API ساده و قدرتمند
+- 📥 **دانلود مستقیم** - فایل PPTX آماده برای دانلود
+
+## 📋 نیازمندی‌ها
+
+- **Node.js**: نسخه 18 یا بالاتر
+- **npm**: برای مدیریت پکیج‌ها
+- **Claude API Key**: از [console.anthropic.com](https://console.anthropic.com) دریافت کنید
 
 ## 🚀 نصب و راه‌اندازی
 
-### پیش‌نیازها
+### 1. کلون کردن پروژه
 
-- Node.js 18 یا بالاتر
-- npm یا yarn
-- API Key از [Anthropic](https://console.anthropic.com/)
-
-### مراحل نصب
-
-1. **Clone کردن پروژه**
 ```bash
 git clone <repository-url>
 cd powerpoint-maker
 ```
 
-2. **نصب dependencies**
+### 2. نصب Dependencies
+
 ```bash
+cd backend
 npm install
 ```
 
-3. **تنظیم API Key**
+### 3. تنظیم API Key
 
-فایل `.env.local` را ویرایش کنید و API Key خود را وارد کنید:
+فایل `.env` در پوشه `backend` را ویرایش کنید:
 
 ```env
-ANTHROPIC_API_KEY=your_api_key_here
+PORT=3001
+CLAUDE_API_KEY=your_actual_claude_api_key_here
+NODE_ENV=development
 ```
 
-4. **اجرای پروژه**
+**نکته**: API Key خود را از [console.anthropic.com](https://console.anthropic.com) دریافت کنید.
+
+### 4. اجرای سرور
+
 ```bash
+# حالت Development (با nodemon)
 npm run dev
+
+# یا حالت Production
+npm start
 ```
 
-5. **باز کردن در مرورگر**
+سرور روی `http://localhost:3001` اجرا می‌شود.
 
-به آدرس [http://localhost:3000](http://localhost:3000) بروید
+## 📚 استفاده از API
+
+### Health Check
+
+```bash
+curl http://localhost:3001/health
+```
+
+**پاسخ:**
+```json
+{
+  "status": "ok",
+  "message": "Persian Presentation Builder API is running"
+}
+```
+
+### تولید ارائه جدید
+
+```bash
+curl -X POST http://localhost:3001/api/generate-presentation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "تاریخچه هوش مصنوعی",
+    "numSlides": 5,
+    "themeId": "professional-blue"
+  }'
+```
+
+**پارامترها:**
+- `topic` (string, required): موضوع ارائه
+- `numSlides` (number, required): تعداد اسلایدها (3-20)
+- `themeId` (string, required): شناسه تم (لیست تم‌ها در پایین)
+- `language` (string, optional): زبان - پیش‌فرض `fa`
+
+**پاسخ موفق:**
+```json
+{
+  "success": true,
+  "presentationId": "pres_1234567890_abc123",
+  "title": "تاریخچه هوش مصنوعی",
+  "downloadUrl": "/api/download/pres_1234567890_abc123",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "layout": "title",
+      "previewUrl": "/api/preview/pres_1234567890_abc123/1"
+    }
+  ]
+}
+```
+
+### دانلود ارائه
+
+```bash
+# دانلود فایل PPTX
+curl -O -J http://localhost:3001/api/download/pres_1234567890_abc123
+```
+
+### پیش‌نمایش اسلاید
+
+```bash
+# مشاهده HTML اسلاید
+curl http://localhost:3001/api/preview/pres_1234567890_abc123/1
+```
+
+## 🎨 تم‌های موجود
+
+| شناسه | نام | توضیحات |
+|------|-----|---------|
+| `professional-blue` | حرفه‌ای آبی | مناسب برای ارائه‌های کسب‌وکار |
+| `creative-coral` | خلاقانه مرجانی | مناسب برای ارائه‌های خلاقانه |
+| `minimal-sage` | مینیمال سبز | ساده و تمیز |
+| `bold-red` | پررنگ قرمز | پرانرژی و جذاب |
+| `luxury-burgundy` | لوکس زرشکی | مناسب برای ارائه‌های رسمی |
+| `dark-purple` | تیره بنفش | مدرن و تکنولوژیک |
+| `warm-blush` | گرم صورتی | نرم و دوستانه |
+| `vibrant-orange` | پرجنب‌وجوش نارنجی | پرانرژی و مثبت |
 
 ## 📁 ساختار پروژه
 
 ```
-src/
-├── app/
-│   ├── api/
-│   │   ├── generate/       # API برای تولید outline
-│   │   └── export/         # API برای export به PowerPoint
-│   ├── page.tsx            # صفحه اصلی
-│   ├── layout.tsx          # Layout کلی (RTL + فونت فارسی)
-│   └── globals.css
-├── components/
-│   ├── PresentationForm.tsx    # فرم ورودی
-│   └── SlidePreview.tsx        # نمایش پیش‌نمایش اسلایدها
-├── lib/
-│   ├── claude.ts           # Service برای Claude API
-│   └── pptx.ts            # Service برای تولید PowerPoint
-└── types/
-    └── presentation.ts     # TypeScript types
+powerpoint-maker/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   └── presentationController.js
+│   │   ├── services/
+│   │   │   ├── claudeService.js
+│   │   │   ├── pptxService.js
+│   │   │   └── fileService.js
+│   │   ├── routes/
+│   │   │   └── presentationRoutes.js
+│   │   ├── config/
+│   │   │   └── themes.js
+│   │   ├── utils/
+│   │   │   ├── validator.js
+│   │   │   └── promptBuilder.js
+│   │   └── server.js
+│   ├── slides/          # HTML slides (generated)
+│   ├── outputs/         # PPTX files (generated)
+│   ├── public/          # Static files
+│   ├── package.json
+│   └── .env
+├── .gitignore
+└── README.md
 ```
 
-## 🎯 نحوه استفاده
+## 🔧 توسعه
 
-1. موضوع پرزنتیشن خود را وارد کنید (مثلاً: "معرفی استارتاپ من")
-2. تعداد اسلایدها را انتخاب کنید (5 تا 20)
-3. نوع مخاطب را مشخص کنید (عمومی، کسب‌وکار، دانشگاهی)
-4. روی دکمه "ساخت پرزنتیشن" کلیک کنید
-5. پس از تولید، پیش‌نمایش را مشاهده کنید
-6. روی "دانلود PowerPoint" کلیک کنید
+### اضافه کردن تم جدید
 
-## 🛠️ تکنولوژی‌های استفاده شده
+فایل `backend/src/config/themes.js` را ویرایش کنید:
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **AI**: Claude 3.5 Sonnet (Anthropic)
-- **Export**: pptxgenjs
-- **Font**: Vazirmatn (Google Fonts)
-
-## 📝 API Endpoints
-
-### POST `/api/generate`
-تولید outline پرزنتیشن
-
-**Request Body:**
-```json
+```javascript
 {
-  "topic": "موضوع پرزنتیشن",
-  "slideCount": 10,
-  "audience": "general"
+  id: 'my-new-theme',
+  name: 'تم جدید من',
+  description: 'توضیحات تم',
+  colors: {
+    primary: '#123456',
+    secondary: '#654321',
+    accent: '#ABCDEF',
+    surface: '#FFFFFF',
+    text: '#000000',
+    muted: '#CCCCCC'
+  },
+  fonts: { heading: 'Arial', body: 'Arial' }
 }
 ```
 
-**Response:**
-```json
-{
-  "outline": {
-    "title": "عنوان پرزنتیشن",
-    "topic": "موضوع",
-    "slides": [...],
-    "slideCount": 10,
-    "audience": "general"
-  }
-}
+### تست محلی
+
+```bash
+# تست health check
+curl http://localhost:3001/health
+
+# تست تولید ارائه
+curl -X POST http://localhost:3001/api/generate-presentation \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"تست","numSlides":3,"themeId":"professional-blue"}'
 ```
 
-### POST `/api/export`
-Export کردن به PowerPoint
+## ⚠️ نکات مهم
 
-**Request Body:**
-```json
-{
-  "outline": { ... }
-}
+1. **API Key**: حتماً API Key معتبر Claude را تنظیم کنید
+2. **حد استفاده**: توجه به محدودیت‌های استفاده از Claude API
+3. **هزینه**: هر درخواست هزینه دارد (~$0.01-0.05 بسته به تعداد اسلایدها)
+4. **زمان تولید**: تولید ارائه 10-30 ثانیه زمان می‌برد
+5. **فایل‌های موقت**: فایل‌های HTML و PPTX در پوشه‌های `slides/` و `outputs/` ذخیره می‌شوند
+
+## 🐛 عیب‌یابی
+
+### خطای "Invalid API Key"
+```bash
+# بررسی API Key
+cat backend/.env | grep CLAUDE_API_KEY
+
+# تست API Key با curl
+curl https://api.anthropic.com/v1/messages \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-sonnet-4-20250514","max_tokens":1024,"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-**Response:** فایل .pptx
-
-## 🎨 سفارشی‌سازی
-
-### تغییر رنگ‌بندی PowerPoint
-
-فایل `src/lib/pptx.ts` را ویرایش کنید:
-
-```typescript
-const COLORS = {
-  primary: '4F46E5',    // رنگ اصلی
-  secondary: '7C3AED',  // رنگ ثانویه
-  // ...
-};
+### خطای "Cannot find module"
+```bash
+cd backend
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-### تغییر Prompt برای Claude
+### پورت در حال استفاده
+```bash
+# تغییر پورت در .env
+echo "PORT=3002" >> backend/.env
+```
 
-فایل `src/lib/claude.ts` را ویرایش کنید و prompt را سفارشی کنید.
+## 📖 مستندات بیشتر
 
-## 🐛 رفع مشکلات
-
-### Error: API key not configured
-- مطمئن شوید فایل `.env.local` را ساخته‌اید
-- API Key را از Anthropic Console دریافت کنید
-
-### فونت فارسی نمایش داده نمی‌شود
-- Cache مرورگر را پاک کنید
-- Dev server را restart کنید
+- [Claude API Documentation](https://docs.anthropic.com/)
+- [PptxGenJS Documentation](https://gitbrent.github.io/PptxGenJS/)
+- [Express.js Documentation](https://expressjs.com/)
 
 ## 🤝 مشارکت
 
-مشارکت‌های شما خوش‌آمد است! لطفاً:
+برای مشارکت در پروژه:
+
 1. Fork کنید
-2. Branch جدید بسازید
-3. تغییرات را commit کنید
-4. Pull Request بفرستید
+2. یک branch جدید بسازید
+3. تغییرات خود را commit کنید
+4. Pull Request بزنید
 
 ## 📄 لایسنس
 
-MIT License
+MIT License - استفاده آزاد برای همه!
 
-## 🙏 تشکر
+## 💬 پشتیبانی
 
-- [Anthropic](https://anthropic.com) برای Claude API
-- [Next.js](https://nextjs.org) برای framework عالی
-- [pptxgenjs](https://gitbrent.github.io/PptxGenJS/) برای کتابخانه PowerPoint
+اگر مشکلی دارید:
+- Issue باز کنید در GitHub
+- مستندات Claude API را بررسی کنید
+- لاگ‌های سرور را چک کنید
 
 ---
 
-**ساخته شده با ❤️ و Claude AI**
+**ساخته شده با ❤️ برای کاربران فارسی‌زبان**
